@@ -1,7 +1,7 @@
 name: Builder
 
 env:
-  MONITORED_FILES: "build.yaml config.yaml Dockerfile rootfs"
+  MONITORED_FILES: "build.yaml config.yaml Dockerfile rootfs run.sh"
 
 on:
   push:
@@ -20,11 +20,11 @@ jobs:
       changed: ${{ steps.changed_addons.outputs.changed }}
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3
 
       - name: Get changed files
         id: changed_files
-        uses: jitterbit/get-changed-files@v1
+        uses: Ana06/get-changed-files@v2.2.0
 
       - name: Find add-on directories
         id: addons
@@ -58,16 +58,16 @@ jobs:
   build:
     needs: init
     runs-on: ubuntu-latest
-    if: needs.init.outputs.changed == 'true'
+    #if: needs.init.outputs.changed == 'true'
     name: Build ${{ matrix.arch }} ${{ matrix.addon }} add-on
     strategy:
       matrix:
-        addon: ${{ fromJson(needs.init.outputs.changed_addons) }}
+        addon: ["config.yaml"]  #${{ fromJson(needs.init.outputs.changed_addons) }}
         arch: ["aarch64", "amd64", "armhf", "armv7", "i386"]
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@v3
 
       - name: Get information
         id: info
@@ -98,7 +98,7 @@ jobs:
 
       - name: Build ${{ matrix.addon }} add-on
         if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2023.03.0
+        uses: home-assistant/builder@2023.12.0
         with:
           args: |
             ${{ env.BUILD_ARGS }} \
